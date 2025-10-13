@@ -37,7 +37,9 @@ app.get("/api/students", (req, res) => {
   res.json(students);
 });
 
-// START SERVER
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+// START SERVER ---- moved to index.js
+// app.listen(PORT, () => {
+//   console.log(`Server listening on port ${PORT}`);
+// });
+
+module.exports = app; // export the app so tests can import it
