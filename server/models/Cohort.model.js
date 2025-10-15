@@ -29,10 +29,10 @@ const cohortSchema = new Schema({
   inProgress: { type: Boolean, default: false },
   programManager: { type: String, required: true },
   leadTeacher: { type: String, required: true },
-  totalHours: Number
+  totalHours: Number,
 });
 
-const Cohort = mongoose.model("cohort", cohortSchema);
+const CohortModel = mongoose.model("cohort", cohortSchema);
 
 // EXPORT THE MODEL
-module.exports = Cohort;
+module.exports = CohortModel;

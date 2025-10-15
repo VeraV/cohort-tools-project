@@ -31,7 +31,7 @@ const studentSchema = new Schema({
   projects: { type: [Schema.Types.ObjectId], ref: "project" },
 });
 
-const Student = mongoose.model("student", studentSchema);
+const StudentModel = mongoose.model("student", studentSchema);
 
 // EXPORT THE MODEL
-module.exports = Student;
+module.exports = StudentModel;
