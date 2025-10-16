@@ -5,7 +5,10 @@ const cookieParser = require("cookie-parser");
 const PORT = 5005;
 const CohortModel = require("./models/Cohort.model");
 const StudentModel = require("./models/Student.model");
-
+const {
+  errorHandler,
+  notFoundHandler,
+} = require("./middleware/error-handling");
 const mongoose = require("mongoose");
 
 mongoose
@@ -29,6 +32,12 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors());
+
+const authRoutes = require("./routes/auth.routes");
+const UserModel = require("./models/User.model");
+const { isAuthenticated } = require("./middleware/jwt.middleware");
+app.use("/auth", authRoutes);
+
 // ROUTES - https://expressjs.com/en/starter/basic-routing.html
 // Devs Team - Start working on the routes here:
 // ...
@@ -44,30 +53,29 @@ app.get("/api/cohorts", (req, res) => {
       res.status(200).json(cohorts);
     })
     .catch((error) => {
-      console.error("Error while retrieving cohorts ->", error);
-      res.status(500).json({ error: "Failed to retrieve cohorts" });
+      next(error);
     });
 });
 
-app.post("/api/cohorts", async (req, res) => {
+app.post("/api/cohorts", async (req, res, next) => {
   try {
     const newCohort = await CohortModel.create(req.body);
     console.log("New cohort ->", newCohort);
     res.status(201).json(newCohort);
   } catch (error) {
-    console.error("Error while creating a cohort ->", error);
-    res.status(500).json({ error: "Failed to create a cohort" });
+    next(error);
   }
 });
 
-app.get("/api/cohorts/:cohortId", async (req, res) => {
+app.get("/api/cohorts/:cohortId", async (req, res, next) => {
   try {
     const foundCohort = await CohortModel.findById(req.params.cohortId);
     console.log("Found cohort ->", foundCohort);
     res.status(200).json(foundCohort);
   } catch (error) {
-    console.error("Error while finding a cohort ->", error);
-    res.status(500).json({ error: "Failed to find a cohort" });
+    next(error);
+    // console.error("Error while finding a cohort ->", error);
+    // res.status(500).json({ error: "Failed to find a cohort" });
   }
 });
 
@@ -179,9 +187,23 @@ app.delete("/api/students/:studentId", async (req, res) => {
     res.status(500).json({ error: "Failed to delete a student" });
   }
 });
+
+app.get("/api/users/:userId", isAuthenticated, async (req, res) => {
+  try {
+    const theUser = await UserModel.findById(req.params.userId);
+    res.status(200).json(theUser);
+  } catch (error) {
+    console.error("Error while getting a user ->", error);
+    res.status(500).json({ error: "Failed to get a user" });
+  }
+});
+
 // START SERVER ---- moved to index.js
 // app.listen(PORT, () => {
 //   console.log(`Server listening on port ${PORT}`);
 // });
+
+app.use(errorHandler);
+app.use(notFoundHandler);
 
 module.exports = app; // export the app so tests can import it
